@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8" />
+    <!-- モバイル端末での画面幅に合わせた表示設定 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>🎲 サイコロアプリ</title>
+    <style>
+        /* === ページ全体のスタイル === */
+        body {
+            display: flex; /* フレックスボックスで中央揃え */
+            justify-content: center; /* 横方向中央 */
+            align-items: center; /* 縦方向中央 */
+            height: 100vh; /* ビューポートの高さいっぱい */
+            margin: 0; /* デフォルトの余白を削除 */
+            background-color: #2C3E50; /* 初期背景色（ダークブルー系） */
+            background-size: cover; /* 背景画像は画面いっぱいに広げる */
+            background-position: center; /* 背景画像の中心を表示 */
+            background-repeat: no-repeat; /* 背景画像の繰り返しをしない */
+            transition: 0.6s ease-in-out; /* 背景画像変更時の滑らかな切り替え */
+            padding: 20px; /* 内側の余白 */
+            box-sizing: border-box; /* パディングも幅・高さに含める */
+            font-family: Arial, sans-serif; /* フォント設定 */
+        }
+
+        /* サイコロとボタンの囲い */
+        .dice-container {
+            text-align: center; /* 中央揃え */
+            border: 0.5px solid white; /* 白の細い枠線 */
+            display: grid; /* グリッドレイアウト（今回は1列） */
+            align-items: center; /* 中身を縦中央に */
+            width: 100%; /* 横幅いっぱい */
+            max-width: 300px; /* 最大幅300px */
+            height: auto; /* 高さは中身に合わせる */
+            padding: 20px; /* 内側余白 */
+            box-sizing: border-box; /* パディング含める */
+            background-color: rgba(255, 255, 255, 0.05); /* 半透明白背景で見やすく */
+            border-radius: 10px; /* 角丸 */
+        }
+
+        /* サイコロ本体 */
+        .dice {
+            width: 100%; /* コンテナの幅に合わせる */
+            max-width: 120px; /* 最大120px */
+            aspect-ratio: 1 / 1; /* 縦横比1:1で正方形を保つ */
+            background-color: white; /* サイコロの白背景 */
+            border-radius: 10px; /* 角丸 */
+            display: grid; /* 3x3のグリッド */
+            padding: 15px; /* 内側余白 */
+            box-sizing: border-box;
+            grid-template-columns: repeat(3, 1fr); /* 3列均等 */
+            grid-template-rows: repeat(3, 1fr); /* 3行均等 */
+            justify-content: center; /* 横方向中央揃え */
+            align-items: center; /* 縦方向中央揃え */
+            gap: 5px; /* セル間の隙間 */
+            margin: auto; /* 親要素内で中央配置 */
+            transform: rotate(0deg); /* 初期状態は回転なし */
+            transition: 0.6s ease-in-out; /* 回転時の滑らかなアニメーション */
+        }
+
+        /* 3x3グリッドの各セル */
+        .cell {
+            width: 20px; /* セルの幅 */
+            height: 20px; /* セルの高さ */
+        }
+
+        /* サイコロの「ドット」（黒丸） */
+        .dot {
+            width: 20px; /* ドットの幅 */
+            height: 20px; /* ドットの高さ */
+            background-color: black; /* 黒色 */
+            border-radius: 50%; /* 丸くする */
+            display: inline-block; /* インラインブロックにして中央寄せ */
+            justify-self: center; /* グリッド内で横中央 */
+            align-self: center; /* グリッド内で縦中央 */
+        }
+
+        /* 目が1のときだけ使う赤いドット */
+        .dot.red {
+            background-color: red; /* 赤色に変更 */
+        }
+
+        /* ボタンのスタイル */
+        button {
+            margin-top: 20px; /* サイコロとの間隔 */
+            padding: 12px 24px; /* 内側の余白 */
+            font-size: 16px; /* 文字サイズ */
+            cursor: pointer; /* ホバー時にポインター表示 */
+            background-color: rgba(227, 173, 254, 0.5); /* 半透明薄紫 */
+            color: black; /* 文字色は黒 */
+            border: none; /* 枠線なし */
+            border-radius: 5px; /* 角丸 */
+            transition: background-color 0.3s ease; /* ホバー時に色が滑らかに変わる */
+            width: 100%; /* 横幅いっぱい */
+            max-width: 200px; /* 最大200px */
+            box-sizing: border-box;
+        }
+
+        /* ボタンのホバー時 */
+        button:hover {
+            background-color: rgba(236, 198, 255, 0.8); /* 少し濃いめの薄紫 */
+        }
+
+        /* モバイル対応（画面幅480px以下） */
+        @media (max-width: 480px) {
+            .dice {
+                max-width: 90px; /* サイコロを小さく */
+            }
+            .dot {
+                width: 14px; /* ドットのサイズを縮小 */
+                height: 14px;
+            }
+            .cell {
+                width: 16px; /* セルも縮小 */
+                height: 16px;
+            }
+            button {
+                font-size: 15px; /* ボタン文字サイズを少し小さく */
+                padding: 10px 20px; /* ボタン内側余白も少し小さく */
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- サイコロとボタンのコンテナ -->
+    <div class="dice-container">
+        <!-- サイコロの目を描画する部分 -->
+        <div class="dice" id="dice"></div>
+        <!-- サイコロを振るボタン。クリックで rollDice 関数実行 -->
+        <button onclick="rollDice()">Roll</button>
+    </div>
+
+<script>
+    // サイコロ要素を取得（id="dice"）
+    const dice = document.getElementById('dice');
+
+    /*
+     * サイコロの目（1〜6）に対応する「ドット」の位置を3x3グリッドのインデックスで指定
+     * グリッドは0〜8の9マス（左上0から右下8まで）
+     */
+    const diceFaces = [
+        [4],                      // 1の目 → 真ん中だけにドット
+        [0, 8],                   // 2の目 → 左上と右下
+        [0, 4, 8],                // 3の目 → 左上・中央・右下
+        [0, 2, 6, 8],             // 4の目 → 四隅
+        [0, 2, 4, 6, 8],          // 5の目 → 四隅＋中央
+        [0, 2, 3, 5, 6, 8]        // 6の目 → 左右に3つずつ縦並び
+    ];
+
+    // 背景画像のファイル名リスト（サイコロの目に対応）
+    const backgroundImages = [
+        'a.jpg', // 1の目の背景
+        'b.jpg', // 2の目
+        'c.jpg', // 3の目
+        'd.jpg', // 4の目
+        'e.jpg', // 5の目
+        'f.jpg'  // 6の目
+    ];
+
+    /*
+     * サイコロの目（ドット）を描画する関数
+     * @param {number[]} face - 表示したい目のドットのインデックス配列
+     */
+    function createDots(face) {
+        dice.innerHTML = ''; // まずサイコロの中身を空にする
+
+        // 9マスを順番に作成
+        for (let i = 0; i < 9; i++) {
+            const dot = document.createElement('div'); // セル用のdiv作成
+            dot.className = 'cell'; // まずセルのスタイルを付与
+
+            // ドットを置く位置なら dot クラスを付ける
+            if (face.includes(i)) {
+                dot.classList.add('dot');
+
+                // もし1の目（ドット1つ）なら赤色にする
+                if (face.length === 1) {
+                    dot.classList.add('red');
+                }
+            }
+
+            // 作成したセルをサイコロ要素に追加
+            dice.appendChild(dot);
+        }
+    }
+
+    /*
+     * サイコロを振る関数
+     * 720度回転アニメーション後にランダムな目を表示し背景画像を変更する
+     */
+    function rollDice() {
+        // サイコロを2回転（720度）させるアニメーション
+        dice.style.transform = 'rotate(720deg)';
+
+        // アニメーションが終わるまで600ミリ秒待つ
+        setTimeout(() => {
+            // 0〜5のランダムな整数を生成（実際の目は1〜6）
+            const randomFace = Math.floor(Math.random() * 6);
+
+            // ドットの配置を更新（サイコロの目を表示）
+            createDots(diceFaces[randomFace]);
+
+            // 背景画像を対応するものに切り替え
+            document.body.style.backgroundImage = `url('${backgroundImages[randomFace]}')`;
+
+            // 回転をリセットして元の角度に戻す（見た目の回転終了）
+            dice.style.transform = 'rotate(0deg)';
+        }, 600);
+    }
+
+    // 初期表示は「1の目」を表示する
+    createDots(diceFaces[0]);
+</script>
